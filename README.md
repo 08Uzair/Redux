@@ -1,70 +1,100 @@
-# Getting Started with Create React App
+## Step1
+First Install react-redux and redux-thunk
+## Step2
+make redux folder : api,reducers,actions,constants
+## Step3
+api:index.js , constants:actionTypes.js ,reducers:index.js 
+## Step4
+In reducers:index.js  :
+```
+import {combineReducers} from 'redux'
+import users from './users'
+const rootReducer = combineReducers({
+users
+})
+export default rootReducer
+```
+## Step5: Create a Store and wrap provider component
+```
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import { Provider } from 'react-redux';
+import { createStore , applyMiddleware ,compose} from 'redux';
+import {thunk} from 'redux-thunk'
+import reducers from './redux/reducers'
+const root = ReactDOM.createRoot(document.getElementById('root'));
+const store = createStore(reducers,compose(applyMiddleware(thunk)))
+root.render(
+    <React.StrictMode>
+    <Provider store={store} >
+        <App />
+    </Provider>
+    </React.StrictMode>
+);
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+// Here we are creating a store and then we are passing that store as a prop in the provider component and after that we are wrapping our provider component to entire application component
+```
+## Step6: Fetch the API in api:index.js
+```
+import axios from 'axios'
+const API = axios.create({ baseURL:'http://localhost:8800/'})
+export const fetchUsers = () => API.get('/get')
+```
 
-## Available Scripts
+## Step7: Added action types in constants 
+```
+export const FETCH_USERS = 'FETCH_USERS'
+```
 
-In the project directory, you can run:
+## Step8: Create a action in action:users.js
+```
+import { fetchUsers } from "../api"
+import { FETCH_USERS } from "../constants/actionTypes";
 
-### `npm start`
+export const getUsers =()=>async(dispatch)=>{
+try {
+    const { data } = await fetchUsers();
+   dispatch({type:FETCH_USERS,payload:data}) 
+} catch (error) {
+    console.log(error)
+}
+}
+```
+## Step9: Create reducers in reducers:users.js
+```
+import { FETCH_USERS } from "../constants/actionTypes";
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+export default(users=[],action)=>{
+    switch (action.type) {
+        case FETCH_USERS:
+            return action.payload;
+            break;
+    
+        default:
+          return users
+    }
+}
+```
+## Step10: Now Use the data from the api in the component you want by importing your lovely action and also useDispatch and useSelector Hook
+```
+import React, { useEffect } from 'react'
+import { useDispatch ,useSelector } from 'react-redux'
+import { getUsers } from '../redux/actions/users'
+const Users = () => {
+    const dispatch = useDispatch();
+    const data = useSelector((state)=>state.users);
+    useEffect(()=>{
+        dispatch(getUsers())
+    },[])
+    console.log(data)
+  return (
+    <div>
+      
+    </div>
+  )
+}
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+export default Users
 
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```
